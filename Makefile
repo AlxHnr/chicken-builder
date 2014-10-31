@@ -17,7 +17,7 @@ TESTS := $(TESTS:test/%.scm=build/test/%)
 all: $(PROGRAMS)
 
 -include dependencies.makefile
-dependencies.makefile: generate-dependencies.scm
+dependencies.makefile: chicken-bundle/generate-dependencies.scm
 	csi -s $<
 
 build/ch-syntax.import.scm: chicken-bundle/ch-syntax.scm | build/
