@@ -30,13 +30,18 @@ how to make the build process aware of your source files.
 
 Your project may also have a test/ directory, which will be scanned to
 generate rules for building and running unit tests. Unit tests require the
-[test](http://wiki.call-cc.org/eggref/4/test) egg. See
-[ch-test](#ch-test) for more informations.
+[test](http://wiki.call-cc.org/eggref/4/test) egg. See [ch-test](#ch-test)
+for more informations.
 
 When building the project, the file "dependencies.makefile" will be placed
 in the root directory of your project. The build process also involves the
 creation of a temporary build/ directory. Do not store any important files
 there directory, otherwise they may be overwritten or deleted.
+
+Before the tests are run, chicken-bundle will create the directory tmp/
+inside the test/ directory. If all tests pass, test/tmp/ will be removed
+again, so make sure not to store important data there. Unit tests are free
+to create arbitrary data inside this temporary directory.
 
 ### Building
 
@@ -117,13 +122,11 @@ ch-tests.
 
 ```scheme
 (function foo (name age)
-  (print name " is " age " years old")
-  ...)
+  (print name " is " age " years old"))
 
 ; Annotate argument types.
 (function foo ((name string) (age fixnum))
-  (print name " is " age " years old")
-  ...)
+  (print name " is " age " years old"))
 
 ; Annotate return and argument types.
 (function (foo string) ((name string) (age fixnum))
