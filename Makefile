@@ -1,9 +1,8 @@
 # This makefile is public domain. The rest of "chicken-bundle" was
 # released under the zlib license.
 CSC         := $(shell which csc)
+CSC_FLAGS   := -O3
 CSC_LDFLAGS :=
-
-CSC_FLAGS := -O3
 
 PROGRAMS := ${shell grep -rl '^(ch-program' src/}
 PROGRAMS := $(PROGRAMS:src/%.scm=build/%)
