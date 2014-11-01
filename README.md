@@ -19,34 +19,32 @@ mkdir -p chicken-bundle/ && cd chicken-bundle/
 curl -O "$MASTER_PATH/chicken-bundle/ch-syntax.scm"
 curl -O "$MASTER_PATH/chicken-bundle/ch-target.scm"
 curl -O "$MASTER_PATH/chicken-bundle/generate-dependencies.scm"
-unset MASTER_PATH && cd ../
+unset MASTER_PATH && cd -
 ```
 
 ### Project structure
 
 Your project should have a src/ directory. It will be scanned to generate
-the dependency file, which will be used by the Makefile. See
-[Features](#features) for more informations about how to make the build
-process aware of your source files.
+the dependency file. See [features](#features) for more informations about
+how to make the build process aware of your source files.
 
 Your project may also have a test/ directory, which will be scanned to
 generate rules for building and running unit tests. Unit tests require the
 [test](http://wiki.call-cc.org/eggref/4/test) egg. See
-[Features](#features) for more informations.
+[ch-test](#ch-test) for more informations.
 
 When building the project, the file "dependencies.makefile" will be placed
-in the root dir of your project. The build process also involves the
+in the root directory of your project. The build process also involves the
 creation of a temporary build/ directory. Do not store any important files
-there directory, otherwise they will be overwritten or wiped while
-building.
+there directory, otherwise they may be overwritten or deleted.
 
 ### Building
 
 Now you can build your project using `make` or `make all`. Additionally you
-can run `make test` and `make clean`, which are pretty self explaining.
+can run `make test` and `make clean`, which will either test or clean up
+your build.
 
-To regenerate the dependencies, you must clean and build your project
-again.
+To regenerate the dependencies, you must clean and rebuild your project.
 
 ## Features
 
@@ -62,8 +60,8 @@ compilation units from them. The build process also ensures that all
 dependencies are handled properly, and that \*.import.scm and \*.types
 files are created and used. Every ch-module will automatically import
 chicken, scheme and ch-syntax. Ch-modules must be in the src/ directory.
-The module name must be the name of the file with its extension removed and
-can't be named "main".
+The module name must be the name of the file with its extension removed. A
+module can't be named "main".
 
 ```scheme
 (ch-module module-name
@@ -72,11 +70,9 @@ can't be named "main".
 
 ### ch-program
 
-This is comparable to [ch-module](#ch-module), but with the difference that
-the source file will not be treated as an unit. \*.import.scm and \*.types
-files will not be generated for ch-programs. Every ch-program will be build
-and linked into "build/file-name", where filename is the name of the file
-with its extension removed. Ch-programs must be in the src/ directory.
+This is comparable to [ch-module](#ch-module), but with some differences:
+the source file will not be treated as a unit and neither \*.import.scm nor
+\*.types files will be emitted. Ch-programs must be in the src/ directory.
 
 ```scheme
 (ch-program
@@ -85,21 +81,22 @@ with its extension removed. Ch-programs must be in the src/ directory.
 
 ### ch-test
 
-Ch-test is like [ch-program](#ch-program), but must be in the test/
+Ch-test is like [ch-program](#ch-program), but with the difference that it
+takes the test name as an argument. Ch-tests must be in the test/
 directory. Ch-test will implicitly use the test egg and wrap your code into
 a test-begin and test-end block. It will also call test-exit for you.
 
 ```scheme
-(ch-test
+(ch-test "test name"
   ...)
 ```
 
 ### ch-import
 
-Combines CHICKEN's (import ...) and (declare (uses ...)) with automatic
-dependency resolving. This is how you tell chicken-bundle to recognize,
-build and link dependencies. "ch-import" is only available inside
-ch-modules, ch-programs or ch-tests.
+Combines CHICKEN's import and (declare (uses ...)) statements with
+automatic dependency resolving. This is how you tell chicken-bundle to
+recognize dependencies for building and linking. 'ch-import' is only
+available inside ch-modules, ch-programs or ch-tests.
 
 ```scheme
 (ch-module foo
@@ -109,26 +106,26 @@ ch-modules, ch-programs or ch-tests.
 
 ### function
 
-This is a wrapper around (define (function arg1 arg2 ...)) which will be
-exported implicitly from the module. It also allows you to annotate types.
-Just see the example below. If you annotate types, the function relies on
-the assumption that you actually pass correctly typed values or it will
-lead to undefined behaviour. But as long as you use only chicken-bundle
-specific constructs to build your project you should get at least type
-warnings during compilation. "function" is only available inside
-ch-modules, ch-programs or ch-tests.
+This allows you to define functions and will add declarations to export
+them from the ch-module. It allows you to annotate types. Just see the
+example below. If you annotate types, the function relies on the assumption
+that correctly typed values are passed, or it will lead to undefined
+behaviour. But as long as you use only chicken-bundle specific constructs
+to build your project, you should get at least type warnings during
+compilation. 'function' is only available inside ch-modules, ch-programs or
+ch-tests.
 
 ```scheme
 (function foo (name age)
   (print name " is " age " years old")
   ...)
 
-# Annotate argument types.
+; Annotate argument types.
 (function foo ((name string) (age fixnum))
   (print name " is " age " years old")
   ...)
 
-# Annotate return and argument types.
+; Annotate return and argument types.
 (function (foo string) ((name string) (age fixnum))
   (string-append name " is " (number->string age) " years old"))
 ```
