@@ -1,3 +1,5 @@
+# This makefile is public domain. The rest of "chicken-bundle" was
+# released under the zlib license.
 CSC         := $(shell which csc)
 CSC_LDFLAGS :=
 
