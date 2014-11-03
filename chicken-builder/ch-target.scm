@@ -29,7 +29,7 @@
 (define-syntax ch-module
   (syntax-rules ()
     ((_ name (export1 export2 ...) body ...)
-      (module name (export1 export2)
+      (module name (export1 export2 ...)
         (import chicken scheme ch-syntax)
         body ...))))
 
