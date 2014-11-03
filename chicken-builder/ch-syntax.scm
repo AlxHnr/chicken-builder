@@ -20,7 +20,7 @@
 ;       distribution.
 
 ;; This module contains all syntactical extensions which are usable inside
-;; chicken-bundle targets. This module is implicitly included by all
+;; chicken-builder targets. This module is implicitly included by all
 ;; ch-targets.
 
 (module ch-syntax (ch-import)

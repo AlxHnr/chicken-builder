@@ -1,4 +1,4 @@
-# This makefile is public domain. The rest of "chicken-bundle" was
+# This makefile is public domain. The rest of "chicken-builder" was
 # released under the zlib license.
 CSC         := $(shell which csc)
 CSC_FLAGS   := -O3
@@ -18,10 +18,10 @@ TESTS := $(TESTS:test/%.scm=build/test/%)
 all: $(PROGRAMS)
 
 -include dependencies.makefile
-dependencies.makefile: chicken-bundle/generate-dependencies.scm
+dependencies.makefile: chicken-builder/generate-dependencies.scm
 	csi -s $<
 
-build/ch-syntax.import.scm: chicken-bundle/ch-syntax.scm | build/
+build/ch-syntax.import.scm: chicken-builder/ch-syntax.scm | build/
 	cd build/ && $(CSC) $(CSC_FLAGS) -J -c ../$< -o ch-syntax.o
 	rm build/ch-syntax.o
 

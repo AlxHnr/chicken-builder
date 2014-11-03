@@ -1,24 +1,24 @@
-# Chicken Bundle
+# Chicken Builder
 
 This bundle contains various syntactical extensions and a small build
 system for CHICKEN Scheme. It is very lightweight and was intended to be
 distributed with your project to avoid additional dependencies.
 
 ## Usage
-### Adding chicken-bundle bundle to your project
+### Adding chicken-builder to your project
 
 First you need to download the bundle into your project directory:
 
 ```sh
 cd your-chicken-project/
 
-MASTER_PATH="https://raw.githubusercontent.com/AlxHnr/chicken-bundle/master"
+MASTER_PATH="https://raw.githubusercontent.com/AlxHnr/chicken-builder/master"
 curl -O "$MASTER_PATH/Makefile"
 
-mkdir -p chicken-bundle/ && cd chicken-bundle/
-curl -O "$MASTER_PATH/chicken-bundle/ch-syntax.scm"
-curl -O "$MASTER_PATH/chicken-bundle/ch-target.scm"
-curl -O "$MASTER_PATH/chicken-bundle/generate-dependencies.scm"
+mkdir -p chicken-builder/ && cd chicken-builder/
+curl -O "$MASTER_PATH/chicken-builder/ch-syntax.scm"
+curl -O "$MASTER_PATH/chicken-builder/ch-target.scm"
+curl -O "$MASTER_PATH/chicken-builder/generate-dependencies.scm"
 unset MASTER_PATH && cd -
 ```
 
@@ -38,7 +38,7 @@ in the root directory of your project. The build process also involves the
 creation of a temporary build/ directory. Do not store any important files
 there directory, otherwise they may be overwritten or deleted.
 
-Before tests are run, chicken-bundle will create a directory named tmp/
+Before tests are run, chicken-builder will create a directory named tmp/
 inside the test/ directory. If all tests pass, test/tmp/ will be removed
 again, so make sure not to store important data there. Unit tests are free
 to create arbitrary data inside test/tmp/.
@@ -49,13 +49,13 @@ Now you can build your project using `make` or `make all`. Additionally you
 can run `make test` and `make clean`, which will either test or clean up
 your build.
 
-Dependencies are only generated on the first time you build. To regenerate
+Dependencies are only generated the first time you build. To regenerate
 them, you must clean and rebuild the project.
 
 ## Features
 
-Chicken-bundle adds the following syntactical extensions. You can only have
-either ch-module, ch-program or ch-test once in a source file.
+Chicken-builder adds the following syntactical extensions. You can only
+have either ch-module, ch-program or ch-test once in a source file.
 
 ### ch-module
 
@@ -100,7 +100,7 @@ a test-begin and test-end block. It will also call test-exit for you.
 ### ch-import
 
 Combines CHICKEN's import and (declare (uses ...)) statements with
-automatic dependency resolving. This is how you tell chicken-bundle to
+automatic dependency resolving. This is how you tell chicken-builder to
 recognize dependencies for building and linking. Circular dependencies are
 forbidden. 'ch-import' is only available inside ch-modules, ch-programs or
 ch-tests.
@@ -114,5 +114,5 @@ ch-tests.
 ## License
 
 The Makefile is public domain. All files in the subdirectory
-"chicken-bundle/" are released under the zlib license. This includes
+"chicken-builder/" are released under the zlib license. This includes
 syntactical extensions and the dependency generator.

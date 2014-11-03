@@ -166,7 +166,7 @@
 (define (build-common-rule-body name extra-args)
   (string-append
     "\tcd build/ && $(CSC) $(CSC_FLAGS) -prologue"
-    " ../chicken-bundle/ch-target.scm \\\n\t\t" extra-args
+    " ../chicken-builder/ch-target.scm \\\n\t\t" extra-args
     " -c ../$< -o ../$@\n"))
 
 ;; Builds the rules needed to build an entire program. See
@@ -204,7 +204,7 @@
         (string-append
           (build-common-rule-head name "src/" "build/" deps)
           "\n\tcd build/ && $(CSC) -A -prologue"
-          " ../chicken-bundle/ch-target.scm -specialize -strict-types"
+          " ../chicken-builder/ch-target.scm -specialize -strict-types"
           " \\\n\t\t-local ../$<" type-flags " -emit-type-file " name
           ".types\n"
           (build-common-rule-body

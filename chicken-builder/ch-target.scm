@@ -24,7 +24,7 @@
 
 ;; ch-module is a simplified version of chicken modules, which unifies
 ;; compilation units with modules. The build system will recognize this and
-;; compile and link ch-modules properly. Chicken-bundle's syntactical
+;; compile and link ch-modules properly. Chicken-builder's syntactical
 ;; extensions are available inside ch-modules.
 (define-syntax ch-module
   (syntax-rules ()
