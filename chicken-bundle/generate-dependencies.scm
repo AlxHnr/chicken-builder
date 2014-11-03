@@ -30,15 +30,18 @@
        (exit 1)))))
 
 ;; Returns a list with all .scm files in a given directory. The path to the
-;; directory must end with a slash ("/").
+;; directory must end with a slash ("/"). If the directory does not exist,
+;; it returns an empty list.
 (define (get-scheme-files dirname)
-  (map
-    (lambda (filename)
-      (string-append dirname filename))
-    (filter
+  (if (directory? dirname)
+    (map
       (lambda (filename)
-        (string-suffix-ci? ".scm" filename))
-      (directory dirname))))
+        (string-append dirname filename))
+      (filter
+        (lambda (filename)
+          (string-suffix-ci? ".scm" filename))
+        (directory dirname)))
+    '()))
 
 ;; Returns the path without the file including the trailing slash.
 (define get-filepath
@@ -131,7 +134,11 @@
           (die "Module \"" dep "\" results in a circular dependency."))
         (unless (hash-table-ref/default dep-table dep #f)
           (hash-table-set! dep-table dep #t)
-          (add-deps (hash-table-ref modules dep))))
+          (condition-case
+            (add-deps (hash-table-ref modules dep))
+            ((exn)
+             (print "error: module '" dep "' does not exist.")
+             (exit 1)))))
       deps))
   (hash-table-keys dep-table))
 
@@ -159,7 +166,7 @@
 (define (build-common-rule-body name extra-args)
   (string-append
     "\tcd build/ && $(CSC) $(CSC_FLAGS) -prologue"
-    " ../chicken-bundle/ch-target.scm\\\n\t\t" extra-args
+    " ../chicken-bundle/ch-target.scm \\\n\t\t" extra-args
     " -c ../$< -o ../$@\n"))
 
 ;; Builds the rules needed to build an entire program. See
@@ -198,7 +205,7 @@
           (build-common-rule-head name "src/" "build/" deps)
           "\n\tcd build/ && $(CSC) -A -prologue"
           " ../chicken-bundle/ch-target.scm -specialize -strict-types"
-          "\\\n\t\t-local ../$<" type-flags " -emit-type-file " name
+          " \\\n\t\t-local ../$<" type-flags " -emit-type-file " name
           ".types\n"
           (build-common-rule-body
             name (string-append type-flags " -J -unit " name)))

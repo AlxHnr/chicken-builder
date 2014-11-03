@@ -4,10 +4,10 @@ CSC         := $(shell which csc)
 CSC_FLAGS   := -O3
 CSC_LDFLAGS :=
 
-PROGRAMS := ${shell grep -rl '^(ch-program' src/}
+PROGRAMS := ${shell grep -srl '^(ch-program' src/}
 PROGRAMS := $(PROGRAMS:src/%.scm=build/%)
 
-TESTS := ${shell grep -rl '^(ch-test' test/}
+TESTS := ${shell grep -srl '^(ch-test' test/}
 TESTS := $(TESTS:test/%.scm=build/test/%)
 
 .SECONDARY: $(patsubst src/%.scm,build/%.o,$(wildcard src/*.scm))

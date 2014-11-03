@@ -49,7 +49,8 @@ Now you can build your project using `make` or `make all`. Additionally you
 can run `make test` and `make clean`, which will either test or clean up
 your build.
 
-To regenerate the dependencies, you must clean and rebuild your project.
+Dependencies are only generated on the first time you build. To regenerate
+them, you must clean and rebuild the project.
 
 ## Features
 
