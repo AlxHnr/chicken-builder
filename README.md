@@ -111,30 +111,6 @@ ch-tests.
   ...)
 ```
 
-### function
-
-This allows you to define functions and will add declarations to export
-them from the ch-module. It allows you to annotate types. Just see the
-example below. If you annotate types, the function relies on the assumption
-that correctly typed values are passed, or it will lead to undefined
-behaviour. But as long as you use only chicken-bundle specific constructs
-to build your project, you should get at least type warnings during
-compilation. 'function' is only available inside ch-modules, ch-programs or
-ch-tests.
-
-```scheme
-(function foo (name age)
-  (print name " is " age " years old"))
-
-; Annotate argument types.
-(function foo ((name string) (age fixnum))
-  (print name " is " age " years old"))
-
-; Annotate return and argument types.
-(function (foo string) ((name string) (age fixnum))
-  (string-append name " is " (number->string age) " years old"))
-```
-
 ## License
 
 The Makefile is public domain. All files in the subdirectory

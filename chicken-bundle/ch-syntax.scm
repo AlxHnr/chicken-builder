@@ -23,8 +23,7 @@
 ;; chicken-bundle targets. This module is implicitly included by all
 ;; ch-targets.
 
-(module ch-syntax
-  (ch-import function)
+(module ch-syntax (ch-import)
   (import chicken scheme)
 
   ;; Unifies imports and uses declarations. This will be used by the build
@@ -34,38 +33,4 @@
       ((_ mod1 mod2 ...)
        (begin
          (declare (uses mod1 mod2 ...))
-         (import mod1 mod2 ...)))))
-
-  ;; A syntactical extension, which allows defining functions with optional
-  ;; type annotations. Such functions will be exported from ch-modules and
-  ;; can be used by other modules. Here are the allowed forms:
-  ;;
-  ;; (function (name return-type) ((arg1 type) (arg2 type)) body ...)
-  ;; (function name ((arg1 type) (arg2 type)) body ...)
-  ;; (function name (arg1 arg2) body ...)
-  (define-syntax function
-    (syntax-rules ()
-      ((_ (name return-type) ((arg1 arg-type1) (arg2 arg-type2) ...)
-          exp1 exp2 ...)
-       (begin
-         (export name)
-         (declare (enforce-argument-types name))
-         (: name (arg-type1 arg-type2 ... -> return-type))
-         (define name
-           (lambda (arg1 arg2 ...)
-             exp1 exp2 ...))))
-      ((_ name ((arg1 arg-type1) (arg2 arg-type2) ...)
-          exp1 exp2 ...)
-       (begin
-         (export name)
-         (declare (enforce-argument-types name))
-         (: name (arg-type1 arg-type2 ... -> undefined))
-         (define name
-           (lambda (arg1 arg2 ...)
-             exp1 exp2 ...))))
-      ((_ name (arg1 arg2 ...) exp1 exp2 ...)
-       (begin
-         (export name)
-         (define name
-           (lambda (arg1 arg2 ...)
-             exp1 exp2 ...)))))))
+         (import mod1 mod2 ...))))))
