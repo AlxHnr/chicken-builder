@@ -1,7 +1,7 @@
 # Chicken Bundle
 
 This bundle contains various syntactical extensions and a small build
-system for CHICKEN Scheme. It is very lightweight and it was intended to be
+system for CHICKEN Scheme. It is very lightweight and was intended to be
 distributed with your project to avoid additional dependencies.
 
 ## Usage
@@ -38,10 +38,10 @@ in the root directory of your project. The build process also involves the
 creation of a temporary build/ directory. Do not store any important files
 there directory, otherwise they may be overwritten or deleted.
 
-Before the tests are run, chicken-bundle will create the directory tmp/
+Before tests are run, chicken-bundle will create a directory named tmp/
 inside the test/ directory. If all tests pass, test/tmp/ will be removed
 again, so make sure not to store important data there. Unit tests are free
-to create arbitrary data inside this temporary directory.
+to create arbitrary data inside test/tmp/.
 
 ### Building
 
@@ -58,7 +58,7 @@ either ch-module, ch-program or ch-test once in a source file.
 
 ### ch-module
 
-It is comparable to CHICKEN's build-in module, but is much simpler. It also
+It is comparable to CHICKEN's build-in module, but is much simpler. It
 unifies modules with units. The dependency generator will search your src/
 directory for such definitions and generate rules to build stand alone
 compilation units from them. The build process also ensures that all
@@ -100,8 +100,9 @@ a test-begin and test-end block. It will also call test-exit for you.
 
 Combines CHICKEN's import and (declare (uses ...)) statements with
 automatic dependency resolving. This is how you tell chicken-bundle to
-recognize dependencies for building and linking. 'ch-import' is only
-available inside ch-modules, ch-programs or ch-tests.
+recognize dependencies for building and linking. Circular dependencies are
+forbidden. 'ch-import' is only available inside ch-modules, ch-programs or
+ch-tests.
 
 ```scheme
 (ch-module foo
