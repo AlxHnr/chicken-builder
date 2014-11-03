@@ -1,8 +1,9 @@
 # Chicken Builder
 
 This bundle contains various syntactical extensions and a small build
-system for CHICKEN Scheme. It is very lightweight and was intended to be
-distributed with your project to avoid additional dependencies.
+system for [CHICKEN Scheme](http://call-cc.org). It is very lightweight and
+was intended to be distributed with your project to avoid additional
+dependencies.
 
 ## Usage
 ### Adding chicken-builder to your project
@@ -70,7 +71,7 @@ The module name must be the name of the file with its extension removed. A
 module can't be named "main".
 
 ```scheme
-(ch-module module-name (export-identifier1 export-identifier2)
+(ch-module NAME (EXPORT ...)
   ...)
 ```
 
