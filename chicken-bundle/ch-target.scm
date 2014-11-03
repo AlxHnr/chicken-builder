@@ -28,8 +28,8 @@
 ;; extensions are available inside ch-modules.
 (define-syntax ch-module
   (syntax-rules ()
-    ((_ name body ...)
-      (module name ()
+    ((_ name (export1 export2 ...) body ...)
+      (module name (export1 export2)
         (import chicken scheme ch-syntax)
         body ...))))
 

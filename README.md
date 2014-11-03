@@ -70,7 +70,7 @@ The module name must be the name of the file with its extension removed. A
 module can't be named "main".
 
 ```scheme
-(ch-module module-name
+(ch-module module-name (export-identifier1 export-identifier2)
   ...)
 ```
 
