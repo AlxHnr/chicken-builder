@@ -19,6 +19,8 @@
 ;    3. This notice may not be removed or altered from any source
 ;       distribution.
 
+;; This script generates "build/extra-makefile.scm".
+
 (use extras posix irregex srfi-1 srfi-13 srfi-69)
 
 ;; Display an error message and exits with failure.
@@ -212,6 +214,45 @@
             name (string-append type-flags " -J -unit " name)))
         out))))
 
+;; Contains the header of the generated makefile, which defines fundamental
+;; build rules. Everything inside this string MUST be indented with tabs.
+(define boilerplate-header #<<END
+CSC ?= $(shell which csc)
+
+PROGRAMS := ${shell grep -srl '^(ch-program' src/}
+PROGRAMS := $(PROGRAMS:src/%.scm=build/%)
+
+TESTS := ${shell grep -srl '^(ch-test' test/}
+TESTS := $(TESTS:test/%.scm=build/test/%)
+
+.SECONDARY: $(patsubst src/%.scm,build/%.o,$(wildcard src/*.scm))
+.SECONDARY: $(patsubst test/%.scm,build/test/%.o,$(wildcard test/*.scm))
+
+# Build targets.
+.PHONY: all test clean
+all: $(PROGRAMS)
+
+build/ch-syntax.import.scm: chicken-builder/ch-syntax.scm | build/
+	cd build/ && $(CSC) $(CSC_FLAGS) -J -c ../$< -o ch-syntax.o
+	rm build/ch-syntax.o
+
+build/test/:
+	mkdir -p $@
+
+test: $(TESTS)
+	mkdir -p test/tmp/
+	@(for test in $(TESTS); do \
+		"$$test" || exit; \
+	done)
+	rm -rf test/tmp/
+
+clean:
+	- rm -rf build/
+	- rm -rf test/tmp/
+
+END
+)
+
 ; Generate recursive dependency lists for all modules, to provoke circular
 ; dependency errors.
 (hash-table-for-each modules
@@ -219,9 +260,11 @@
     (get-recursive-dependencies
       key (hash-table-ref modules key))))
 
-; Generate the dependency file.
-(call-with-output-file "dependencies.makefile"
+; Write rules to "build/extra.makefile".
+(create-directory "build/")
+(call-with-output-file "build/extra.makefile"
   (lambda (out)
+    (write-line boilerplate-header out)
     (write-program-rules programs "src/" "build/" out)
     (write-module-rules modules out)
     (write-program-rules tests "test/" "build/test/" out)))
