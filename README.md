@@ -60,7 +60,7 @@ have either ch-module, ch-program or ch-test once in a source file.
 
 ### ch-module
 
-It is comparable to CHICKEN's build-in module, but is much simpler. It
+It is pretty much like CHICKEN's 'module', but with the difference that it
 unifies modules with units. The dependency generator will search your src/
 directory for such definitions and generate rules to build stand alone
 compilation units from them. The build process also ensures that all
@@ -79,7 +79,8 @@ module can't be named "main".
 
 This is comparable to [ch-module](#ch-module), but with some differences:
 the source file will not be treated as a unit and neither \*.import.scm nor
-\*.types files will be emitted. Ch-programs must be in the src/ directory.
+\*.types files will be emitted. Chicken-builder will build stand alone
+executables from ch-programs. Ch-programs must be in the src/ directory.
 
 ```scheme
 (ch-program
@@ -89,9 +90,9 @@ the source file will not be treated as a unit and neither \*.import.scm nor
 ### ch-test
 
 Ch-test is like [ch-program](#ch-program), but with the difference that it
-takes the test name as an argument. Ch-tests must be in the test/
-directory. Ch-test will implicitly use the test egg and wrap your code into
-a test-begin and test-end block. It will also call test-exit for you.
+takes the test name as argument. Ch-tests must be in the test/ directory.
+Ch-test will implicitly use the test egg and wrap your code into a
+test-begin and test-end block. It will also call test-exit for you.
 
 ```scheme
 (ch-test "test name"

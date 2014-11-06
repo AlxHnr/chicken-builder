@@ -62,7 +62,8 @@
     (if (null? rest)
       cdr-list
       (collect-imports
-        (if (and (list? (car rest)) (eq? 'ch-import (caar rest)))
+        (if (and (list? (car rest)) (not (null? (car rest)))
+                 (eq? 'ch-import (caar rest)))
           (append cdr-list (cdar rest))
           cdr-list)
         (cdr rest)))))
