@@ -29,9 +29,13 @@
 (define-syntax ch-module
   (syntax-rules ()
     ((_ name (export1 export2 ...) body ...)
-      (module name (export1 export2 ...)
-        (import chicken scheme ch-syntax)
-        body ...))))
+     (module name (export1 export2 ...)
+       (import chicken scheme ch-syntax)
+       body ...))
+    ((_ name () body ...)
+     (module name ()
+       (import chicken scheme ch-syntax)
+       body ...))))
 
 ;; This is basically the same as ch-module, but with the difference that
 ;; the build system will build standalone programs from such files.
