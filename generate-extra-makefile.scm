@@ -219,7 +219,7 @@
 ;; Contains the header of the generated makefile, which defines fundamental
 ;; build rules. Everything inside this string MUST be indented with tabs.
 (define boilerplate-header #<<END
-CSC ?= $(shell which csc)
+CSC := $(shell which csc)
 
 PROGRAMS := ${shell grep -srl '^(ch-program' src/}
 PROGRAMS := $(PROGRAMS:src/%.scm=build/%)
