@@ -102,6 +102,8 @@
            (cond
              ((eq? (cadr target-body) 'main)
               (die filename ": A module cannot be named \"main\"."))
+             ((eq? (cadr target-body) 'ch-syntax)
+              (die filename ": A module cannot be named \"ch-syntax\"."))
              ((not (eq? (cadr target-body) target-name))
               (die filename ": The module name \"" (cadr target-body)
                    "\" must be \"" target-name "\".")))
