@@ -21,14 +21,14 @@
 
 ;; This module contains all syntactical extensions which are usable inside
 ;; chicken-builder targets. This module is implicitly included by all
-;; ch-targets.
+;; chb-targets.
 
-(module ch-syntax (ch-import)
+(module chb-syntax (chb-import)
   (import chicken scheme)
 
   ;; Unifies imports and uses declarations. This will be used by the build
   ;; system to determine dependencies.
-  (define-syntax ch-import
+  (define-syntax chb-import
     (syntax-rules ()
       ((_ mod1 mod2 ...)
        (begin

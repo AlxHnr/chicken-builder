@@ -58,24 +58,24 @@
       (irregex-replace splitter filename 2))))
 
 ;; Takes a list and collects all cdrs from all sublists whose first element
-;; is 'ch-import.
+;; is 'chb-import.
 (define (get-imports lst)
   (let collect-imports ((cdr-list '()) (rest lst))
     (if (null? rest)
       cdr-list
       (collect-imports
         (if (and (list? (car rest)) (not (null? (car rest)))
-                 (eq? 'ch-import (caar rest)))
+                 (eq? 'chb-import (caar rest)))
           (append cdr-list (cdar rest))
           cdr-list)
         (cdr rest)))))
 
-;; Returns true, if a list is a valid ch-target body.
-(define (is-ch-target? lst)
+;; Returns true, if a list is a valid chb-target body.
+(define (is-chb-target? lst)
   (and (list? lst)
-       (or (eq? (car lst) 'ch-module)
-           (eq? (car lst) 'ch-program)
-           (eq? (car lst) 'ch-test))))
+       (or (eq? (car lst) 'chb-module)
+           (eq? (car lst) 'chb-program)
+           (eq? (car lst) 'chb-test))))
 
 ;; These hash tables associate targets with a list of symbols describing
 ;; their dependencies.
@@ -87,7 +87,7 @@
 ;; src/ and test/.
 (for-each
   (lambda (filename)
-    (define target-body (find is-ch-target? (read-file filename)))
+    (define target-body (find is-chb-target? (read-file filename)))
     (when target-body
       (define target-type (car target-body))
       (define target-name
@@ -96,19 +96,19 @@
       (define dep-table
         ; Get the correct hash table and die on any kind of mismatches.
         (cond
-          ((and (string=? filepath "src/") (eq? target-type 'ch-program))
+          ((and (string=? filepath "src/") (eq? target-type 'chb-program))
            programs)
-          ((and (string=? filepath "src/") (eq? target-type 'ch-module))
+          ((and (string=? filepath "src/") (eq? target-type 'chb-module))
            (cond
              ((eq? (cadr target-body) 'main)
               (die filename ": A module cannot be named \"main\"."))
-             ((eq? (cadr target-body) 'ch-syntax)
-              (die filename ": A module cannot be named \"ch-syntax\"."))
+             ((eq? (cadr target-body) 'chb-syntax)
+              (die filename ": A module cannot be named \"chb-syntax\"."))
              ((not (eq? (cadr target-body) target-name))
               (die filename ": The module name \"" (cadr target-body)
                    "\" must be \"" target-name "\".")))
            modules)
-          ((and (string=? filepath "test/") (eq? target-type 'ch-test))
+          ((and (string=? filepath "test/") (eq? target-type 'chb-test))
            tests)
           (else
             (die
@@ -164,14 +164,15 @@
     build-path name ".o: " src-path name ".scm |"
     (if (string=? build-path "build/")
       "" (string-append " " build-path))
-    " build/ch-syntax.import.scm" (append-symbol-list deps "build/" ".o")))
+    " build/chb-syntax.import.scm"
+    (append-symbol-list deps "build/" ".o")))
 
 ;; Builds the body of a makefile target. It takes a string of extra targets
 ;; which will be passed additionally to $(CSC). It can be empty.
 (define (build-common-rule-body name extra-args)
   (string-append
     "\tcd build/ && $(CSC) $(CSC_FLAGS) -prologue"
-    " ../chicken-builder/ch-target.scm \\\n\t\t" extra-args
+    " ../chicken-builder/chb-target.scm \\\n\t\t" extra-args
     " -c ../$< -o ../$@\n"))
 
 ;; Builds the rules needed to build an entire program. See
@@ -209,7 +210,7 @@
         (string-append
           (build-common-rule-head name "src/" "build/" deps)
           "\n\tcd build/ && $(CSC) -A -prologue"
-          " ../chicken-builder/ch-target.scm -specialize -strict-types"
+          " ../chicken-builder/chb-target.scm -specialize -strict-types"
           " \\\n\t\t-local ../$<" type-flags " -emit-type-file " name
           ".types\n"
           (build-common-rule-body
@@ -221,10 +222,10 @@
 (define boilerplate-header #<<END
 CSC := $(shell which csc)
 
-PROGRAMS := ${shell grep -srl '^(ch-program' src/}
+PROGRAMS := ${shell grep -srl '^(chb-program' src/}
 PROGRAMS := $(PROGRAMS:src/%.scm=build/%)
 
-TESTS := ${shell grep -srl '^(ch-test' test/}
+TESTS := ${shell grep -srl '^(chb-test' test/}
 TESTS := $(TESTS:test/%.scm=build/test/%)
 
 .SECONDARY: $(patsubst src/%.scm,build/%.o,$(wildcard src/*.scm))
@@ -234,9 +235,9 @@ TESTS := $(TESTS:test/%.scm=build/test/%)
 .PHONY: all test clean
 all: $(PROGRAMS)
 
-build/ch-syntax.import.scm: chicken-builder/ch-syntax.scm | build/
-	cd build/ && $(CSC) $(CSC_FLAGS) -J -c ../$< -o ch-syntax.o
-	rm build/ch-syntax.o
+build/chb-syntax.import.scm: chicken-builder/chb-syntax.scm | build/
+	cd build/ && $(CSC) $(CSC_FLAGS) -J -c ../$< -o chb-syntax.o
+	rm build/chb-syntax.o
 
 build/test/:
 	mkdir -p $@

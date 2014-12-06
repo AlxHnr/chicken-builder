@@ -36,8 +36,8 @@ Your project must be structured like this:
   * Makefile
 
 The **src/** directory contains your code. Chicken-builder will search this
-directory for [ch-modules](#ch-module) and [ch-programs](#ch-program), to
-generate "build/extra.makefile". This extra makefile contains all the
+directory for [chb-modules](#chb-module) and [chb-programs](#chb-program),
+to generate "build/extra.makefile". This extra makefile contains all the
 rules needed to build your project and can be included by your main
 Makefile.
 
@@ -46,7 +46,7 @@ depends on the [test](http://wiki.call-cc.org/eggref/4/test) egg. Before
 any tests are run, chicken-builder will create the directory **test/tmp/**.
 This directory can by used by unit tests to create temporary files. If all
 tests pass, **test/tmp/** will be removed again, so make sure not to store
-important data there. See [ch-test](#ch-test) for more informations.
+important data there. See [chb-test](#chb-test) for more informations.
 
 The **build/** directory will be created the first time you generate the
 extra makefile. It contains only build specific data which may be
@@ -81,60 +81,60 @@ clean up your build.
 
 Chicken-builder adds the following syntactical extensions to simplify the
 usage of CHICKEN's build-in module system. You can only have either
-ch-module, ch-program or ch-test once in a source file.
+chb-module, chb-program or chb-test once in a source file.
 
-### ch-module
+### chb-module
 
 This can be used is pretty much like a normal CHICKEN module. The
-difference is, that each ch-module is also a CHICKEN unit. The dependency
-generator will search your **src/** directory for ch-modules and generate
+difference is, that each chb-module is also a CHICKEN unit. The dependency
+generator will search your **src/** directory for chb-modules and generate
 rules to build them. The build process also ensures that all dependencies
 are handled properly, and takes care of \*.import.scm and \*.types files.
-Every ch-module will implicitly import chicken, scheme and ch-syntax.
-Ch-modules must be in the **src/** directory. The module's name must be the
-name of the file with its extension removed, and can't be named "main" or
-"ch-syntax".
+Every chb-module will implicitly import chicken, scheme and chb-syntax.
+Chb-modules must be in the **src/** directory. The module's name must be
+the name of the file with its extension removed, and can't be named "main"
+or "chb-syntax".
 
 ```scheme
-(ch-module NAME (EXPORT ...)
+(chb-module NAME (EXPORT ...)
   ...)
 ```
 
-### ch-program
+### chb-program
 
-This is similar to [ch-module](#ch-module), but with some differences: It
+This is similar to [chb-module](#chb-module), but with some differences: It
 has no module name and the source file will not be treated as a unit.
-Neither \*.import.scm nor \*.types files will be created for ch-programs.
-Chicken-builder will build stand alone executables from ch-programs.
+Neither \*.import.scm nor \*.types files will be created for chb-programs.
+Chicken-builder will build stand alone executables from chb-programs.
 
 ```scheme
-(ch-program
+(chb-program
   ...)
 ```
 
-### ch-test
+### chb-test
 
-Ch-test is like [ch-program](#ch-program), but with the difference that one
-must specify the name of the test as a string. Ch-tests must be in the
-**test/** directory. Ch-test will implicitly use the
+Chb-test is like [chb-program](#chb-program), but with the difference that one
+must specify the name of the test as a string. Chb-tests must be in the
+**test/** directory. Chb-test will implicitly use the
 [test](http://wiki.call-cc.org/eggref/4/test) egg and wrap your code into a
 test-begin and test-end block. It will also call test-exit for you.
 
 ```scheme
-(ch-test "test name"
+(chb-test "test name"
   ...)
 ```
 
-### ch-import
+### chb-import
 
 This is how you tell chicken-builder to recognize dependencies for building
-and linking. Ch-import combines CHICKEN's _import_ and _uses_ declarations
+and linking. Chb-import combines CHICKEN's _import_ and _uses_ declarations
 with automatic dependency resolving. Circular dependencies are forbidden.
-Ch-import is only available inside ch-modules, ch-programs or ch-tests.
+Chb-import is only available inside chb-modules, chb-programs or chb-tests.
 
 ```scheme
-(ch-module foo
-  (ch-import bar foobar)
+(chb-module foo
+  (chb-import bar foobar)
   ...)
 ```
 

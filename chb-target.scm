@@ -22,38 +22,38 @@
 ;; This file contains all syntactical extensions which are used by the
 ;; build system to build the project.
 
-;; ch-module is a simplified version of chicken modules, which unifies
+;; chb-module is a simplified version of chicken modules, which unifies
 ;; compilation units with modules. The build system will recognize this and
-;; compile and link ch-modules properly. Chicken-builder's syntactical
-;; extensions are available inside ch-modules.
-(define-syntax ch-module
+;; compile and link chb-modules properly. Chicken-builder's syntactical
+;; extensions are available inside chb-modules.
+(define-syntax chb-module
   (syntax-rules ()
     ((_ name (export1 export2 ...) body ...)
      (module name (export1 export2 ...)
-       (import chicken scheme ch-syntax)
+       (import chicken scheme chb-syntax)
        body ...))
     ((_ name () body ...)
      (module name ()
-       (import chicken scheme ch-syntax)
+       (import chicken scheme chb-syntax)
        body ...))))
 
-;; This is basically the same as ch-module, but with the difference that
+;; This is basically the same as chb-module, but with the difference that
 ;; the build system will build standalone programs from such files.
-(define-syntax ch-program
+(define-syntax chb-program
   (syntax-rules ()
     ((_ body ...)
      (module main ()
-       (import chicken scheme ch-syntax)
+       (import chicken scheme chb-syntax)
        body ...))))
 
-;; This is like ch-program, but with the difference that it will be build
+;; This is like chb-program, but with the difference that it will be build
 ;; and run as part of the test target. It also includes all necessary
 ;; imports and test statements to simplify testing.
-(define-syntax ch-test
+(define-syntax chb-test
   (syntax-rules ()
     ((_ name body ...)
      (module main ()
-       (import chicken scheme ch-syntax)
+       (import chicken scheme chb-syntax)
        (use test)
        (test-begin name)
        body ...
