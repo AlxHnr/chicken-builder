@@ -85,12 +85,12 @@ chb-module, chb-program or chb-test once in a source file.
 
 ### chb-module
 
-This can be used is pretty much like a normal CHICKEN module. The
-difference is, that each chb-module is also a CHICKEN unit. The dependency
-generator will search your **src/** directory for chb-modules and generate
-rules to build them. The build process also ensures that all dependencies
-are handled properly, and takes care of \*.import.scm and \*.types files.
-Every chb-module will implicitly import chicken, scheme and chb-syntax.
+This is pretty much like a normal CHICKEN module. The difference is, that
+each chb-module is also a CHICKEN unit. The dependency generator will
+search your **src/** directory for chb-modules and generate rules to build
+them. The build process also ensures that all dependencies are handled
+properly, and takes care of \*.import.scm and \*.types files. Every
+chb-module will implicitly import chicken, scheme and chb-syntax.
 Chb-modules must be in the **src/** directory. The module's name must be
 the name of the file with its extension removed, and can't be named "main"
 or "chb-syntax".
