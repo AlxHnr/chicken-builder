@@ -1,31 +1,69 @@
 # Chicken Builder
 
-This bundle contains a small build system and a convenient wrapper around
-[CHICKEN Scheme's](http://call-cc.org) module system. It is very
-lightweight and was intended to be distributed with your project to avoid
-additional dependencies.
+This bundle contains a makefile generator and a convenient wrapper around
+[CHICKEN Scheme's](http://call-cc.org) module system. The module wrapper
+simplifies CHICKEN's module syntax and is less ambiguous, so the makefile
+generator can derive a dependency tree from your source code.
 
 ## Usage
-### Adding chicken-builder to your project
 
-In order to use chicken-builder, you must add it to your project. One way
-to do so, is to include it as a git submodule:
+After successful [installation](#requirements-and-installation), you must
+chdir into a directory, which contains a project conforming to the required
+[project structure](#project-structure). To initialize your build and
+generate an extra makefile, simply run `chicken-builder-init`. This will
+create the file "build/extra.makefile", which must be included by your main
+makefile.
 
-```sh
-git submodule add https://github.com/AlxHnr/chicken-builder
+Now you can build your project using **make** or **make all**. Additionally
+you can run **make test** and **make clean**, which will either test or
+clean up your build.
+
+You can add a build target for the extra-makefile, so you don't need to
+initialize the build each time. See the example below:
+
+```make
+# Optional flags, which are passed to csc.
+CSC_FLAGS   = -O3
+CSC_LDFLAGS = -lSomeLib
+
+-include build/extra.makefile
+build/extra.makefile:
+        chicken-builder-init
 ```
 
-Another way would be to add download the files directly into your project
-directory:
+But beware, that this has the disadvantage of dependencies being resolved
+only once during generation of the source file. To update the
+extra-makefile, simply run `chicken-builder-init` again.
+
+## Requirements and installation
+
+Chicken-builder expects CHICKEN Scheme to be preinstalled on your system.
+After cloning this repository, you must chdir into it. Now you have two
+options: a system wide, or a local installation.
+
+A **system wide installation** is the default. Chicken-builder will be
+installed to `/usr/local`, unless you set *INSTALL_PREFIX* to another path.
+
+For a **local installation** you must set the variable *INSTALL_PREFIX* to
+your local installation directory, which is usually `~/.local/`.
+
+Now you can build and install Chicken-builder with the following commands.
 
 ```sh
-wget https://github.com/AlxHnr/chicken-builder/archive/master.zip
-unzip master.zip
-mv chicken-builder-master chicken-builder
-rm master.zip chicken-builder/README.md
+make
+make install # Eventually this command must be executed as root.
 ```
 
-### Project structure
+Please mind that *INSTALL_PREFIX* must be set before you build
+Chicken-builder.
+
+## Uninstalling Dlaunch
+
+Uninstalling is pretty much like installing. Just make sure, that
+*INSTALL_PREFIX* is set exactly like during its installation. Then run
+`make uninstall` from the source directory.
+
+## Project structure
 
 Your project must be structured like this:
 
@@ -52,30 +90,7 @@ The **build/** directory will be created the first time you generate the
 extra makefile. It contains only build specific data which may be
 overwritten or removed.
 
-The **Makefile** is the main makefile which will build your project. The
-only thing it needs to do, is to generate "build/extra.makefile" and
-include it. The main makefile can be used to extend the extra makefile, or
-even add custom rules. Here an example:
-
-```make
-# Optional flags, which are passed to csc.
-CSC_FLAGS   = -O3
-CSC_LDFLAGS = -lSomeLib
-
-# This is the mandatory part, which builds the extra makefile and includes
-# it. But consider that this will resolve the dependencies only once. So to
-# regenerate them, you must eiter clean and rebuild your project, or run
-# "chicken-builder/generate-extra-makefile.scm" manually.
--include build/extra.makefile
-build/extra.makefile:
-	csi -s chicken-builder/generate-extra-makefile.scm
-```
-
-### Building
-
-Now you can build your project using **make** or **make all**. Additionally
-you can run **make test** and **make clean**, which will either test or
-clean up your build.
+The **Makefile** is the main makefile which will build your project.
 
 ## Module wrapper
 
