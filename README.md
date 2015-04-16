@@ -18,7 +18,7 @@ Now you can build your project using **make** or **make all**. Additionally
 you can run **make test** and **make clean**, which will either test or
 clean up your build.
 
-You can add a build target for the extra-makefile, so you don't need to
+You can add a build target for the extra makefile, so you don't need to
 initialize the build each time. See the example below:
 
 ```make
@@ -32,8 +32,8 @@ build/extra.makefile:
 ```
 
 But beware, that this has the disadvantage of dependencies being resolved
-only once during generation of the source file. To update the
-extra-makefile, simply run `chicken-builder-init` again.
+only once during generation of the source file. To update the extra
+makefile, simply run `chicken-builder-init` again.
 
 ## Requirements and installation
 
@@ -57,11 +57,11 @@ make install # Eventually this command must be executed as root.
 Please mind that *INSTALL_PREFIX* must be set before you build
 Chicken-builder.
 
-## Uninstalling Dlaunch
+### Uninstallation
 
-Uninstalling is pretty much like installing. Just make sure, that
-*INSTALL_PREFIX* is set exactly like during its installation. Then run
-`make uninstall` from the source directory.
+Uninstallation is pretty much like installation. Just make sure, that
+*INSTALL_PREFIX* is setup exactly like during its installation. Then run
+`make uninstall` from Chicken-builder's source directory.
 
 ## Project structure
 
@@ -74,10 +74,9 @@ Your project must be structured like this:
   * Makefile
 
 The **src/** directory contains your code. Chicken-builder will search this
-directory for [chb-modules](#chb-module) and [chb-programs](#chb-program),
-to generate "build/extra.makefile". This extra makefile contains all the
-rules needed to build your project and can be included by your main
-Makefile.
+directory for [chb-modules](#chb-module) and [chb-programs](#chb-program)
+to generate the extra makefile. This makefile contains all the rules needed
+to build your project and can be included by your main Makefile.
 
 The **test/** directory contains your unit tests. This feature implicitly
 depends on the [test](http://wiki.call-cc.org/eggref/4/test) egg. Before
@@ -107,7 +106,7 @@ them. The build process also ensures that all dependencies are handled
 properly, and takes care of \*.import.scm and \*.types files. Every
 chb-module will implicitly import chicken, scheme and chb-syntax.
 Chb-modules must be in the **src/** directory. The module's name must be
-the name of the file with its extension removed, and can't be named "main"
+the name of the file with its extension removed and can't be named "main"
 or "chb-syntax".
 
 ```scheme
