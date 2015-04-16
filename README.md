@@ -41,13 +41,13 @@ Chicken-builder expects CHICKEN Scheme to be preinstalled on your system.
 After cloning this repository, you must chdir into it. Now you have two
 options: a system wide, or a local installation.
 
-A **system wide installation** is the default. Chicken-builder will be
+A system wide installation is the default. Chicken-builder will be
 installed to `/usr/local`, unless you set *INSTALL_PREFIX* to another path.
 
-For a **local installation** you must set the variable *INSTALL_PREFIX* to
-your local installation directory, which is usually `~/.local/`.
+For a local installation you must set the variable *INSTALL_PREFIX* to your
+local installation directory, which is usually `~/.local/`.
 
-Now you can build and install Chicken-builder with the following commands.
+Now you can build and install Chicken-builder with the following commands:
 
 ```sh
 make

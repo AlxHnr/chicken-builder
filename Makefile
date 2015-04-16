@@ -5,7 +5,7 @@ PROGRAM = chicken-builder-init
 SYNTAX_FILES = chb-syntax.import.scm chb-target.scm
 
 INSTALL_PREFIX ?= /usr/local
-SYNTAX_INSTALL_PATH = $(INSTALL_PREFIX)/share/chicken-builder/
+SYNTAX_INSTALL_PATH = $(INSTALL_PREFIX)/lib/chicken-builder/
 
 # Build targets.
 .PHONY: all clean
@@ -32,4 +32,4 @@ uninstall:
 	rm "$(INSTALL_PREFIX)/bin/$(PROGRAM)"
 	rm -rfv "$(SYNTAX_INSTALL_PATH)"
 	rmdir --ignore-fail-on-non-empty "$(INSTALL_PREFIX)/bin/" \
-	  "$(INSTALL_PREFIX)/share/"
+	  "$(INSTALL_PREFIX)/lib/"

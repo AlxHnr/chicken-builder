@@ -78,7 +78,7 @@
 (define-constant syntax-install-path
   (string-append
     (or (get-environment-variable "INSTALL_PREFIX") "/usr/local")
-    "/share/chicken-builder/"))
+    "/lib/chicken-builder/"))
 
 (define-constant chb-target-file
   (string-append syntax-install-path "chb-target.scm"))
