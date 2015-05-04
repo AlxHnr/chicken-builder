@@ -126,6 +126,11 @@
       (hash-table-set! dep-table target-name (get-imports target-body))))
   (append (get-scheme-files "src/") (get-scheme-files "test/")))
 
+;; Refuse directories which don't contain a valid chicken builder project.
+(if (or (zero? (hash-table-size programs))
+        (zero? (hash-table-size modules)))
+  (die "must be inside a valid chicken builder project."))
+
 ;; Gets the full, recursive dependency list for a target, containing of all
 ;; dependencies and their dependencies. The first argument is the name
 ;; (symbol) of the target, for which the dependencies should be determined.
