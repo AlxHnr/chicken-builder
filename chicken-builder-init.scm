@@ -86,6 +86,25 @@
 (define-constant syntax-import-file
   (string-append syntax-install-path "chb-syntax.import.scm"))
 
+(define (print-help)
+  (print
+    "Usage: chicken-builder-init [OPTION]...\n"
+    "Initializes the chicken-builder project in the current directory.\n\n"
+    "  --help\t\tprint this help and exit."))
+
+; Process command line arguments.
+(define skip-targets (make-hash-table))
+(for-each
+  (lambda (arg)
+    (cond
+      ((string=? arg "--help")
+       (print-help)
+       (exit))
+      (else
+        (die "invalid argument: '" arg
+             "'. Try `chicken-builder-init --help`."))))
+  (command-line-arguments))
+
 ;; These hash tables associate targets with a list of symbols describing
 ;; their dependencies.
 (define programs (make-hash-table))
