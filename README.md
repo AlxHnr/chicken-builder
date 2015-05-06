@@ -9,10 +9,10 @@ generator can derive a dependency tree from your source code.
 
 After successful [installation](#requirements-and-installation), you must
 chdir into a directory, which contains a project conforming to the required
-[project structure](#project-structure). To initialize your build and
-generate an extra makefile, simply run `chicken-builder-init`. This will
-create the file "build/extra.makefile", which must be included by your main
-makefile.
+[project structure](#required-project-structure). To initialize your build
+and generate an extra makefile, simply run `chicken-builder-init`. This
+will create the file "build/extra.makefile", which must be included by your
+main makefile.
 
 Now you can build your project using `make`. The _all_, _test_ and _clean_
 targets are defined in the extra.makefile.
@@ -32,6 +32,18 @@ chicken-builder-init --skip-targets=build/main-program
 
 # This will disable build/main-program and build/main-program.o.
 ```
+
+The extra makefile will define the following variables:
+
+* CSC - contains the full path to the csc binary
+* PROGRAMS - contains paths to all programs in build/, relative to the
+  projects root directory
+* TESTS - like PROGRAMS, but for tests in build/tests/
+
+The extra makefile will use of the following variables if they are defined:
+
+* CSC\_FLAGS - Flags passed directly to CSC when compiling
+* CSC\_LDFLAGS - Flags passed directly to CSC when linking
 
 ## Requirements and installation
 
@@ -54,7 +66,7 @@ Uninstallation is pretty much like installation. Just make sure, that
 *INSTALL_PREFIX* is setup exactly like during its installation. Then run
 `make uninstall` from Chicken-builder's source directory.
 
-## Project structure
+## Required project structure
 
 Your project must be structured like this:
 
@@ -80,7 +92,8 @@ The **build/** directory will be created the first time you generate the
 extra makefile. It contains only build specific data which may be
 overwritten or removed.
 
-The **Makefile** is the main makefile which will build your project.
+The **Makefile** is the main makefile which will build your project and
+must include `build/extra.makefile`.
 
 ## Module wrapper
 
