@@ -14,48 +14,39 @@ generate an extra makefile, simply run `chicken-builder-init`. This will
 create the file "build/extra.makefile", which must be included by your main
 makefile.
 
-Now you can build your project using **make** or **make all**. Additionally
-you can run **make test** and **make clean**, which will either test or
-clean up your build.
+Now you can build your project using `make`. The _all_, _test_ and _clean_
+targets are defined in the extra.makefile.
 
-You can add a build target for the extra makefile, so you don't need to
-initialize the build each time. See the example below:
+To prevent chicken-builder from generating rules for specific targets you
+can disable them via the `--skip-targets=...` argument. You can separate
+multiple build targets using commas. Here are some examples:
 
-```make
-# Optional flags, which are passed to csc.
-CSC_FLAGS   = -O3
-CSC_LDFLAGS = -lSomeLib
+```sh
+chicken-builder-init --skip-targets=test,clean --skip-targets=foo
+chicken-builder-init --skip-targets=build/foo.o,build/test/string
 
--include build/extra.makefile
-build/extra.makefile:
-        chicken-builder-init
+# Objects which directly belong to a program or a test can only be disabled
+# via the program or test itself:
+
+chicken-builder-init --skip-targets=build/main-program
+
+# This will disable build/main-program and build/main-program.o.
 ```
-
-But beware, that this has the disadvantage of dependencies being resolved
-only once during generation of the source file. To update the extra
-makefile, simply run `chicken-builder-init` again.
 
 ## Requirements and installation
 
-Chicken-builder expects CHICKEN Scheme to be preinstalled on your system.
-After cloning this repository, you must chdir into it. Now you have two
-options: a system wide, or a local installation.
-
-A system wide installation is the default. Chicken-builder will be
-installed to `/usr/local`, unless you set *INSTALL_PREFIX* to another path.
-
-For a local installation you must set the variable *INSTALL_PREFIX* to your
-local installation directory, which is usually `~/.local/`.
-
-Now you can build and install Chicken-builder with the following commands:
+[CHICKEN Scheme](http://call-cc.org) must be installed on your system.
+After cloning this repository and changing into its directory, you can
+build and install it with the following commands:
 
 ```sh
 make
 make install # Eventually this command must be executed as root.
 ```
 
-Please mind that *INSTALL_PREFIX* must be set before you build
-Chicken-builder.
+By default it will be installed to `/usr/local`, but you can change the
+installation path by setting *INSTALL_PREFIX*. This variable _must_ be set
+before building Chicken-builder.
 
 ### Uninstallation
 
