@@ -21,6 +21,27 @@
 
 (use extras posix files irregex srfi-1 srfi-13 srfi-69)
 
+; -------------------------------------------------------------------------
+; Capture environment variables.
+(define-constant syntax-install-path
+  (string-append
+    (or (get-environment-variable "INSTALL_PREFIX") "/usr/local")
+    "/lib/chicken-builder/"))
+
+(define-constant chb-target-file
+  (string-append syntax-install-path "chb-target.scm"))
+
+(define-constant syntax-import-file
+  (string-append syntax-install-path "chb-syntax.import.scm"))
+
+; Various hash tables.
+(define skip-targets (make-hash-table))
+(define programs     (make-hash-table))
+(define modules      (make-hash-table))
+(define tests        (make-hash-table))
+
+; -------------------------------------------------------------------------
+; Various helper functions.
 ;; Display an error message and exits with failure.
 (define-syntax die
   (syntax-rules ()
@@ -28,6 +49,15 @@
      (begin
        (print "Error: " messages ...)
        (exit 1)))))
+
+;; Prints a simple help text.
+(define (print-help)
+  (print
+    "Usage: chicken-builder-init [OPTION]...\n"
+    "Initializes the chicken-builder project in the current directory.\n\n"
+    "  --help\t\tprint this help and exit.\n"
+    "  --skip-targets=...\tcomma separated list of targets, for which no"
+    " make rules\n\t\t\tshould be generated."))
 
 ;; Returns a list with all .scm files in a given directory. The path to the
 ;; directory must end with a slash ("/"). If the directory does not exist,
@@ -75,27 +105,106 @@
            (eq? (car lst) 'chb-program)
            (eq? (car lst) 'chb-test))))
 
-(define-constant syntax-install-path
+;; Builds a string by appending a list of symbols. Each symbol will be
+;; converted to a string and pre- and suffixed by given substrings.
+(define (append-symbol-list lst prefix suffix)
+  (fold
+    (lambda (sym str)
+      (string-append str " " prefix (symbol->string sym) suffix))
+    "" lst))
+
+;; Builds the head of a makefile target. It takes the target name, the
+;; path to the source ending with a slash, and the path to the build
+;; directory for this target ending with a slash. The last argument is a
+;; list of dependencies.
+(define (build-common-rule-head name src-path build-path deps)
   (string-append
-    (or (get-environment-variable "INSTALL_PREFIX") "/usr/local")
-    "/lib/chicken-builder/"))
+    build-path name ".o: " src-path name ".scm |"
+    (if (string=? build-path "build/")
+      "" (string-append " " build-path))
+    (append-symbol-list deps "build/" ".o")))
 
-(define-constant chb-target-file
-  (string-append syntax-install-path "chb-target.scm"))
+;; Builds the body of a makefile target. It takes a string of extra targets
+;; which will be passed additionally to $(CSC). It can be empty.
+(define (build-common-rule-body name extra-args)
+  (string-append
+    "\tcd build/ && $(CSC) $(CSC_FLAGS) -prologue " chb-target-file
+    " \\\n\t\t" extra-args " -c ../$< -o ../$@\n"))
 
-(define-constant syntax-import-file
-  (string-append syntax-install-path "chb-syntax.import.scm"))
+;; Writes the rules needed to build all modules in a given table to an
+;; output port.
+(define (write-module-rules table out)
+  (hash-table-for-each table
+    (lambda (mod deps)
+      (define name (symbol->string mod))
+      (define type-flags (append-symbol-list deps "-types " ".types"))
+      (write-line
+        (string-append
+          (build-common-rule-head name "src/" "build/" deps)
+          "\n\tcd build/ && $(CSC) -A -prologue " chb-target-file
+          " -specialize -strict-types \\\n\t\t-local ../$<" type-flags
+          " -emit-type-file " name ".types\n"
+          (build-common-rule-body
+            name (string-append type-flags " -J -unit " name)))
+        out))))
 
-(define (print-help)
-  (print
-    "Usage: chicken-builder-init [OPTION]...\n"
-    "Initializes the chicken-builder project in the current directory.\n\n"
-    "  --help\t\tprint this help and exit.\n"
-    "  --skip-targets=...\tcomma separated list of targets, for which no"
-    " make rules\n\t\t\tshould be generated."))
+;; Gets the full, recursive dependency list for a target, containing of all
+;; dependencies and their dependencies. The first argument is the name
+;; (symbol) of the target, for which the dependencies should be determined.
+;; If it is 'main', it will never result in a circular dependency error.
+;; The second argument is the list containing the targets direct
+;; dependencies. This function will exit this script if it detects circular
+;; dependencies.
+(define (get-recursive-dependencies target-name root-deps)
+  (define dep-table (make-hash-table))
+  ; Populate the dep-table recursively by adding dependencies and their
+  ; dependencies.
+  (let add-deps ((deps root-deps))
+    (for-each
+      (lambda (dep)
+        ; Search for circular dependencies. Modules cannot depend on
+        ; programs/tests and they cannot be named main. Thus circular
+        ; dependencies can only be detected if the search starts from a
+        ; module.
+        (if (eq? dep target-name)
+          (die "Module \"" dep "\" results in a circular dependency."))
+        (unless (hash-table-ref/default dep-table dep #f)
+          (hash-table-set! dep-table dep #t)
+          (condition-case
+            (add-deps (hash-table-ref modules dep))
+            ((exn)
+             (print "error: module '" dep "' does not exist.")
+             (exit 1)))))
+      deps))
+  (hash-table-keys dep-table))
 
+;; Builds the rules needed to build an entire program. See
+;; 'build-common-rule-head' for further explanation of the arguments.
+(define (build-program-rule name src-path build-path deps)
+  (string-append
+    build-path name ": " build-path name ".o"
+    (append-symbol-list
+      (get-recursive-dependencies 'main deps) "build/" ".o")
+    "\n\t$(CSC) $(CSC_LDFLAGS) $^ -o $@\n\n"
+    (build-common-rule-head name src-path build-path deps) "\n"
+    (build-common-rule-body
+      name (append-symbol-list deps "-types " ".types"))))
+
+;; Builds the rules needed to build all programs in a given table and
+;; writes them to an output port. It takes the path to the source and the
+;; build directory of the program. Both paths can either be empty or must
+;; end with a slash.
+(define (write-program-rules table src-path build-path out)
+  (hash-table-for-each table
+    (lambda (program deps)
+      (write-line
+        (build-program-rule
+          (symbol->string program) src-path build-path deps)
+        out))))
+
+; -------------------------------------------------------------------------
+; Main program.
 ; Process command line arguments.
-(define skip-targets (make-hash-table))
 (for-each
   (lambda (arg)
     (cond
@@ -110,12 +219,6 @@
       (else
         (die "invalid argument: '" arg "'."))))
   (command-line-arguments))
-
-;; These hash tables associate targets with a list of symbols describing
-;; their dependencies.
-(define programs (make-hash-table))
-(define modules (make-hash-table))
-(define tests (make-hash-table))
 
 ;; Populate the hash tables defined above by collecting all targets from
 ;; src/ and test/.
@@ -156,104 +259,14 @@
         (zero? (hash-table-size modules)))
   (die "must be inside a valid chicken builder project."))
 
-;; Gets the full, recursive dependency list for a target, containing of all
-;; dependencies and their dependencies. The first argument is the name
-;; (symbol) of the target, for which the dependencies should be determined.
-;; If it is 'main', it will never result in a circular dependency error.
-;; The second argument is the list containing the targets direct
-;; dependencies. This function will exit this script if it detects circular
-;; dependencies.
-(define (get-recursive-dependencies target-name root-deps)
-  (define dep-table (make-hash-table))
-  ; Populate the dep-table recursively by adding dependencies and their
-  ; dependencies.
-  (let add-deps ((deps root-deps))
-    (for-each
-      (lambda (dep)
-        ; Search for circular dependencies. Modules cannot depend on
-        ; programs/tests and they cannot be named main. Thus circular
-        ; dependencies can only be detected if the search starts from a
-        ; module.
-        (if (eq? dep target-name)
-          (die "Module \"" dep "\" results in a circular dependency."))
-        (unless (hash-table-ref/default dep-table dep #f)
-          (hash-table-set! dep-table dep #t)
-          (condition-case
-            (add-deps (hash-table-ref modules dep))
-            ((exn)
-             (print "error: module '" dep "' does not exist.")
-             (exit 1)))))
-      deps))
-  (hash-table-keys dep-table))
+; Generate recursive dependency lists for all modules to provoke circular
+; dependency errors.
+(hash-table-for-each modules
+  (lambda (key value)
+    (get-recursive-dependencies
+      key (hash-table-ref modules key))))
 
-;; Builds a string by appending a list of symbols. Each symbol will be
-;; converted to a string and pre- and suffixed by given substrings.
-(define (append-symbol-list lst prefix suffix)
-  (fold
-    (lambda (sym str)
-      (string-append str " " prefix (symbol->string sym) suffix))
-    "" lst))
-
-;; Builds the head of a makefile target. It takes the target name, the
-;; path to the source ending with a slash, and the path to the build
-;; directory for this target ending with a slash. The last argument is a
-;; list of dependencies.
-(define (build-common-rule-head name src-path build-path deps)
-  (string-append
-    build-path name ".o: " src-path name ".scm |"
-    (if (string=? build-path "build/")
-      "" (string-append " " build-path))
-    (append-symbol-list deps "build/" ".o")))
-
-;; Builds the body of a makefile target. It takes a string of extra targets
-;; which will be passed additionally to $(CSC). It can be empty.
-(define (build-common-rule-body name extra-args)
-  (string-append
-    "\tcd build/ && $(CSC) $(CSC_FLAGS) -prologue " chb-target-file
-    " \\\n\t\t" extra-args " -c ../$< -o ../$@\n"))
-
-;; Builds the rules needed to build an entire program. See
-;; 'build-common-rule-head' for further explanation of the arguments.
-(define (build-program-rule name src-path build-path deps)
-  (string-append
-    build-path name ": " build-path name ".o"
-    (append-symbol-list
-      (get-recursive-dependencies 'main deps) "build/" ".o")
-    "\n\t$(CSC) $(CSC_LDFLAGS) $^ -o $@\n\n"
-    (build-common-rule-head name src-path build-path deps) "\n"
-    (build-common-rule-body
-      name (append-symbol-list deps "-types " ".types"))))
-
-;; Builds the rules needed to build all programs in a given table and
-;; writes them to an output port. It takes the path to the source and the
-;; build directory of the program. Both paths can either be empty or must
-;; end with a slash.
-(define (write-program-rules table src-path build-path out)
-  (hash-table-for-each table
-    (lambda (program deps)
-      (write-line
-        (build-program-rule
-          (symbol->string program) src-path build-path deps)
-        out))))
-
-;; Writes the rules needed to build all modules in a given table to an
-;; output port.
-(define (write-module-rules table out)
-  (hash-table-for-each table
-    (lambda (mod deps)
-      (define name (symbol->string mod))
-      (define type-flags (append-symbol-list deps "-types " ".types"))
-      (write-line
-        (string-append
-          (build-common-rule-head name "src/" "build/" deps)
-          "\n\tcd build/ && $(CSC) -A -prologue " chb-target-file
-          " -specialize -strict-types \\\n\t\t-local ../$<" type-flags
-          " -emit-type-file " name ".types\n"
-          (build-common-rule-body
-            name (string-append type-flags " -J -unit " name)))
-        out))))
-
-; Build a string with all the pre-defined targets a chicken-builder project
+; Build a string with all pre-defined targets a chicken-builder project
 ; needs. This string respects 'skip-targets'.
 (define boilerplate-header
   (string-append
@@ -304,7 +317,7 @@ END
 test: $(TESTS)
 	mkdir -p test/tmp/
 	@(for test in $(TESTS); do \
-		"$$test" || exit; \
+	  "$$test" || exit; \
 	done)
 	rm -rf test/tmp/
 END
@@ -326,13 +339,6 @@ END
 (if (hash-table-exists? skip-targets "test")
   "" " test/tmp/")))
 "\n"))
-
-; Generate recursive dependency lists for all modules, to provoke circular
-; dependency errors.
-(hash-table-for-each modules
-  (lambda (key value)
-    (get-recursive-dependencies
-      key (hash-table-ref modules key))))
 
 ; Write rules to "build/extra.makefile".
 (create-directory "build/")
