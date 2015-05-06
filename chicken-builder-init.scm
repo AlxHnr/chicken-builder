@@ -193,14 +193,17 @@
 ;; Builds the rules needed to build all programs in a given table and
 ;; writes them to an output port. It takes the path to the source and the
 ;; build directory of the program. Both paths can either be empty or must
-;; end with a slash.
+;; end with a slash. If the specified target was disabled via
+;; 'skip-targets', nothing will be done.
 (define (write-program-rules table src-path build-path out)
   (hash-table-for-each table
     (lambda (program deps)
-      (write-line
-        (build-program-rule
-          (symbol->string program) src-path build-path deps)
-        out))))
+      (let ((name (symbol->string program)))
+        (unless
+          (hash-table-exists? skip-targets (string-append build-path name))
+          (write-line
+            (build-program-rule name src-path build-path deps)
+            out))))))
 
 ; -------------------------------------------------------------------------
 ; Main program.
