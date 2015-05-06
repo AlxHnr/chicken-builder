@@ -11,39 +11,36 @@ After successful [installation](#requirements-and-installation), you must
 chdir into a directory, which contains a project conforming to the required
 [project structure](#required-project-structure). To initialize your build
 and generate an extra makefile, simply run `chicken-builder-init`. This
-will create the file "build/extra.makefile", which must be included by your
+will create the file "build/extra.makefile" which must be included by your
 main makefile.
 
 Now you can build your project using `make`. The _all_, _test_ and _clean_
-targets are defined in the extra.makefile.
+targets are already predefined in the extra.makefile.
 
-To prevent chicken-builder from generating rules for specific targets you
-can disable them via the `--skip-targets=...` argument. You can separate
-multiple build targets using commas. Here are some examples:
+To prevent chicken-builder from generating rules for specific targets, you
+can disable them via the `--skip-targets=...` flag. This flag takes comma
+separated target names. Here are some examples:
 
 ```sh
 chicken-builder-init --skip-targets=test,clean --skip-targets=foo
 chicken-builder-init --skip-targets=build/foo.o,build/test/string
 
-# Objects which directly belong to a program or a test can only be disabled
-# via the program or test itself:
-
+# Object files which belong directly to a program/test can only be
+# disabled by disabling the program/test itself:
 chicken-builder-init --skip-targets=build/main-program
-
-# This will disable build/main-program and build/main-program.o.
 ```
 
 The extra makefile will define the following variables:
 
-* CSC - contains the full path to the csc binary
+* CSC - contains the full path to the csc program.
 * PROGRAMS - contains paths to all programs in build/, relative to the
-  projects root directory
-* TESTS - like PROGRAMS, but for tests in build/tests/
+  projects root directory.
+* TESTS - like PROGRAMS, but for tests in build/tests/.
 
-The extra makefile will use of the following variables if they are defined:
+The extra makefile will use the following variables if they are defined:
 
-* CSC\_FLAGS - Flags passed directly to CSC when compiling
-* CSC\_LDFLAGS - Flags passed directly to CSC when linking
+* CSC\_FLAGS - Flags passed directly to CSC when compiling.
+* CSC\_LDFLAGS - Flags passed directly to CSC when linking.
 
 ## Requirements and installation
 
@@ -62,9 +59,8 @@ before building Chicken-builder.
 
 ### Uninstallation
 
-Uninstallation is pretty much like installation. Just make sure, that
-*INSTALL_PREFIX* is setup exactly like during its installation. Then run
-`make uninstall` from Chicken-builder's source directory.
+Ensure that *INSTALL_PREFIX* is setup exactly like during its installation.
+Then run `make uninstall` from Chicken-builder's source directory.
 
 ## Required project structure
 
