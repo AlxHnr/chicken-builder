@@ -291,16 +291,6 @@ TESTS := $(TESTS:test/%.scm=build/test/%)
 # Build targets:
 END
 
-(if (hash-table-exists? skip-targets "build/test/")
-  ""
-#<<END
-
-
-build/test/:
-	mkdir -p $@
-END
-)
-
 ; The "all" target.
 (if (hash-table-exists? skip-targets "all")
   ""
@@ -309,6 +299,17 @@ END
 
 .PHONY: all
 all: $(PROGRAMS)
+END
+)
+
+; The directory for compiled tests.
+(if (hash-table-exists? skip-targets "build/test/")
+  ""
+#<<END
+
+
+build/test/:
+	mkdir -p $@
 END
 )
 
