@@ -90,7 +90,9 @@
   (print
     "Usage: chicken-builder-init [OPTION]...\n"
     "Initializes the chicken-builder project in the current directory.\n\n"
-    "  --help\t\tprint this help and exit."))
+    "  --help\t\tprint this help and exit.\n"
+    "  --skip-targets=...\tcomma separated list of targets, for which no"
+    " make rules\n\t\t\tshould be generated."))
 
 ; Process command line arguments.
 (define skip-targets (make-hash-table))
@@ -100,9 +102,13 @@
       ((string=? arg "--help")
        (print-help)
        (exit))
+      ((string-prefix? "--skip-targets=" arg)
+       (for-each
+         (lambda (target)
+           (hash-table-set! skip-targets target #t))
+         (string-split (substring arg 15) ",")))
       (else
-        (die "invalid argument: '" arg
-             "'. Try `chicken-builder-init --help`."))))
+        (die "invalid argument: '" arg "'."))))
   (command-line-arguments))
 
 ;; These hash tables associate targets with a list of symbols describing
@@ -247,9 +253,12 @@
             name (string-append type-flags " -J -unit " name)))
         out))))
 
-;; Contains the header of the generated makefile, which defines fundamental
-;; build rules. Everything inside this string MUST be indented with tabs.
-(define boilerplate-header #<<END
+; Build a string with all the pre-defined targets a chicken-builder project
+; needs. This string respects 'skip-targets'.
+(define boilerplate-header
+  (string-append
+; Fundamental build rules.
+#<<END
 CSC := $(shell which csc)
 
 PROGRAMS := ${shell grep -srl '^(chb-program' src/}
@@ -261,26 +270,62 @@ TESTS := $(TESTS:test/%.scm=build/test/%)
 .SECONDARY: $(patsubst src/%.scm,build/%.o,$(wildcard src/*.scm))
 .SECONDARY: $(patsubst test/%.scm,build/test/%.o,$(wildcard test/*.scm))
 
-# Build targets.
-.PHONY: all test clean
-all: $(PROGRAMS)
+# Build targets:
+END
+
+(if (hash-table-exists? skip-targets "build/test/")
+  ""
+#<<END
+
 
 build/test/:
 	mkdir -p $@
+END
+)
 
+; The "all" target.
+(if (hash-table-exists? skip-targets "all")
+  ""
+#<<END
+
+
+.PHONY: all
+all: $(PROGRAMS)
+END
+)
+
+; Rules for running tests.
+(if (hash-table-exists? skip-targets "test")
+  ""
+#<<END
+
+
+.PHONY: test
 test: $(TESTS)
 	mkdir -p test/tmp/
 	@(for test in $(TESTS); do \
 		"$$test" || exit; \
 	done)
 	rm -rf test/tmp/
-
-clean:
-	- rm -rf build/
-	- rm -rf test/tmp/
-
 END
 )
+
+; Rules for cleaning up.
+(if (hash-table-exists? skip-targets "clean")
+  ""
+(string-append
+#<<END
+
+
+.PHONY: clean
+clean:
+	- rm -rf build/
+END
+
+; Clean up the temporary test directory.
+(if (hash-table-exists? skip-targets "test")
+  "" " test/tmp/")))
+"\n"))
 
 ; Generate recursive dependency lists for all modules, to provoke circular
 ; dependency errors.
