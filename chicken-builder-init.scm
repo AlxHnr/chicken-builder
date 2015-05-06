@@ -136,17 +136,19 @@
 (define (write-module-rules table out)
   (hash-table-for-each table
     (lambda (mod deps)
-      (define name (symbol->string mod))
-      (define type-flags (append-symbol-list deps "-types " ".types"))
-      (write-line
-        (string-append
-          (build-common-rule-head name "src/" "build/" deps)
-          "\n\tcd build/ && $(CSC) -A -prologue " chb-target-file
-          " -specialize -strict-types \\\n\t\t-local ../$<" type-flags
-          " -emit-type-file " name ".types\n"
-          (build-common-rule-body
-            name (string-append type-flags " -J -unit " name)))
-        out))))
+      (let ((name (symbol->string mod))
+            (type-flags (append-symbol-list deps "-types " ".types")))
+        (unless (hash-table-exists?
+                  skip-targets (string-append "build/" name ".o"))
+          (write-line
+            (string-append
+              (build-common-rule-head name "src/" "build/" deps)
+              "\n\tcd build/ && $(CSC) -A -prologue " chb-target-file
+              " -specialize -strict-types \\\n\t\t-local ../$<" type-flags
+              " -emit-type-file " name ".types\n"
+              (build-common-rule-body
+                name (string-append type-flags " -J -unit " name)))
+            out))))))
 
 ;; Gets the full, recursive dependency list for a target, containing of all
 ;; dependencies and their dependencies. The first argument is the name
