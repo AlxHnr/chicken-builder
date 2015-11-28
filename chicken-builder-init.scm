@@ -260,8 +260,8 @@
   (append (get-scheme-files "src/") (get-scheme-files "test/")))
 
 ;; Refuse directories which don't contain a valid chicken builder project.
-(if (or (zero? (hash-table-size programs))
-        (zero? (hash-table-size modules)))
+(if (and (zero? (hash-table-size programs))
+         (zero? (hash-table-size tests)))
   (die "must be inside a valid chicken builder project."))
 
 ; Generate recursive dependency lists for all modules to provoke circular
